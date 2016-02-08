@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Sat Dec 06 06:18:41 CET 2014
+markTmpDer=true
+builderNum=2
+outputDir=pdf/
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=ISJPaper.tex
+outputFile=ISJPaper.pdf
+langSpell=en
+markDer=true
+srcDir=src/

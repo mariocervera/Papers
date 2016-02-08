@@ -1,0 +1,715 @@
+
+% ER 2012: International Conference on Conceptual Modeling
+
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+
+\usepackage[latin1]{inputenc}
+
+\usepackage{url}
+\urldef{\mailsa}\path|{alfred.hofmann, ursula.barth, ingrid.haas, frank.holzwarth,|
+\urldef{\mailsb}\path|anna.kramer, leonie.kunz, christine.reiss, nicole.sator,|
+\urldef{\mailsc}\path|erika.siebert-cole, peter.strasser, lncs}@springer.com|    
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
+\begin{document}
+
+\mainmatter  % start of an individual contribution
+
+\title{The MOSKitt4ME Approach: Providing Process Support in a Method
+Engineering Context\thanks{This work has been developed with the support of
+MICINN under the project EVERYWARE TIN2010-18011.}}
+
+\author{Mario Cervera \and Manoli Albert \and Victoria Torres \and Vicente
+Pelechano}
+
+\institute{Centro de Investigaci\'on en M\'etodos de Producci\'on de Software\\ 
+Universidad Polit\'ecnica de Valencia \\ Camino de Vera s/n, 46022 Valencia,
+Spain\\
+\email{\{mcervera,malbert,vtorres,pele\}@pros.upv.es}
+}
+
+\maketitle
+
+\begin{abstract}
+
+It is commonly agreed that software developments methods must be defined
+(or adapted) in-house in order to meet the particular needs of the organizations
+where they are to be applied. To help meet this challenge, Method Engineering
+(ME) research aims to provide solutions to efficiently deal with the definition
+and adaptation of methods, and the construction of the supporting software
+tools. However, while the product part of methods is fully considered by most ME
+approaches, the specification and enactment of the process part is less
+well-supported. To fill this gap, this work presents a methodological ME
+approach and a Computer-Aided Method Engineering (CAME) environment (MOSKitt4ME)
+that support the design and implementation of the process part of methods in the
+context of Model-Driven Engineering. The proposal is illustrated by means of a
+real case study from the Valencian Regional Ministry of Infrastructure,
+Territory and Environment.
+
+\keywords{Method Engineering, CAME Environment, Process Support, Model-Driven
+Engineering}
+\end{abstract}
+
+\section{Introduction}
+
+The definition of a software development method suitable for all situations is
+now considered unfeasible \cite{Cockburn00,HendersonSellers10}. For
+this reason, software organizations need to define (or adapt) their methods
+in-house in order to meet their specific needs. To help meet this challenge,
+Method Engineering (ME) research aims to provide solutions
+\cite{Brinkkemper99,Karlsson04,Prakash97,Ralyte01a} to efficiently deal with the
+definition and adaptation of methods and also with the construction of the
+supporting software tools.
+
+Similarly to software engineering, which is concerned with all aspects of
+software and its development, ME is concerned with all aspects of methods and
+their definition. Thus, most ME approaches define precise engineering solutions
+that address the definition of the two interrelated aspects that generally
+comprise methods: product and process \cite{Brinkkemper99,Prakash97,Ralyte01a}.
+However, while it is commonly agreed that the product aspect of methods
+represents the artifacts to be produced during the method execution, the process
+aspect is usually understood in two slightly different ways. Some consider the
+process aspect as the overall development process of the method, which
+encompasses all the activity-related issues needed for software development
+\cite{Niknafs09}. By contrast, most ME approaches (e.g.,
+\cite{Brinkkemper99,Karlsson09,Prakash99,Ralyte01a}) use the term process at a
+smaller scale, considering a process as the description of how a single method
+product must be built.
+
+In this work, we consider processes at the greater scale (hence, we denote
+hereafter the overall process of methods simply as the method \textit{process
+part}\footnote{Likewise, we denote the product aspect of methods as the method
+\textit{product part}.}). We argue that supporting the specification and the
+enactment of the process part of methods brings important benefits. A
+precise, complete, and well-structured process specification may be useful to
+facilitate the understanding of how software development is performed within an
+organization. Furthermore, the enactment of this process specification in a
+software environment may be useful to guide software engineers throughout the
+actual development process and also to automate it as far as possible. However,
+to the best of our knowledge there is no ME approach that supports the
+specification and the enactment of the process part of methods, and also
+provides complete software support to these issues.
+
+In order to fill this gap, this paper describes a methodological approach and a
+supporting software environment that support the specification of the process
+part of methods and also the construction of the software tools required to
+enact this process part. The proof of concept is performed in the context of a
+ME approach and a Computer-Aided Method Engineering (CAME) environment, called
+MOSKitt4ME\footnote{MOSKitt4ME is an extension of MOSKitt
+(http://www.moskitt.org/) for ME.}, that have been presented by the authors in
+\cite{Cervera10,Cervera11}. This ME approach is based on Model-Driven
+Engineering (MDE) techniques and thereby it proposes defining methods as method
+models based on the SPEM 2.0 standard \cite{spem} (\textit{method design} phase)
+and semi-automatically building the supporting CASE environments by means of
+model transformations (\textit{method implementation} phase). This paper focuses
+on extending both the ME proposal and the MOSKitt4ME tool to enable process
+specification (during method design) and process enactment (during method
+implementation). Specifically, the proposal and the CAME environment have been
+enhanced with an executable process modeling language (BPMN 2.0 \cite{bpmn}) to
+properly support the specification of the process part of methods. Moreover, the
+proposal and the CAME environment have also been extended to support the
+generation of CASE environments that incorporate process enactment through the
+use of a process engine.
+
+The proposal and the CAME environment presented in this paper are being used at
+the Valencian Regional Ministry of Infrastructure, Territory and Environment,
+also known as CIT. Specifically, the gvMetrica method has been specified using
+MOSKitt4ME and a CASE environment has been generated from this specification.
+Moreover, gvMetrica is currently being executed in real projects using this CASE
+environment. The application of the proposal in a real context is allowing us to
+take initial feedback that can be used to improve it.
+
+The paper is structured as follows. First, section \ref{SectionStateOfTheArt}
+presents a brief state-of-the-art review that highlights some of the process
+support limitations that present current ME approaches. Then, section
+\ref{SectionOverview} provides an overview of our proposal. Section
+\ref{SectionMethodDesign} describes how the process specification is performed
+during the method design. Section \ref{SectionMethodImplementation} describes
+how the process enactment is supported in the method implementation. Finally,
+section \ref{SectionConclusions} draws some conclusions.
+
+\section{State of the Art}
+\label{SectionStateOfTheArt}
+
+The term Method Engineering was introduced in the mid-eighties by Bergstra
+\textit{et al}. in \cite{Bergstra85}. Thereafter, many research efforts have
+attempted to provide solutions to the challenges that ME entails. Some of the
+most relevant contributions are those by Brinkkemper
+\cite{Brinkkemper96,Brinkkemper99}, Prakash
+\cite{Prakash97,Prakash99}, Ralyt\'e \cite{Ralyte01a,Ralyte01b} and Karlsson
+\cite{Karlsson04,Karlsson09}. These works are based on a modular view of
+methods, whereby methods are built by assembling different kinds of methods
+modules, namely method fragments, method blocks, method chunks and method
+components respectively. With regard to the process support, these modules focus
+on the processes necessary to develop specific method products. The method
+process part is defined when these modules are assembled, generally by means of
+precedence relationships that establish their execution order. Thereby, the
+resulting process is quite limited in terms of control flow, since complex
+behavior (such as the expressed by branching conditions, events,
+synchronizations, etc.) cannot be defined.
+
+Another important limitation of these approaches refers to process enactment.
+The proposals by Ralyt\'e \cite{Ralyte01a,Ralyte01b} and Karlsson
+\cite{Karlsson04,Karlsson09} do not consider process enactment. Prakash
+\cite{Prakash97,Prakash99} defines an enactment algorithm that is oriented
+towards the construction of specific method products and, therefore, does not
+align with process enactment as we intend to support in our ME approach. The
+support provided for process enactment in Brinkkemper's proposal
+\cite{Brinkkemper96,Brinkkemper99} is more akin to our work. However, since only
+two types of relationships (i.e., precedence and conditional precedence) can be
+established between process fragments, the resulting processes, and
+consequently their enactment, may be too limited for software engineers working
+on real development projects.
+
+Other important contribution to the ME field is the OPEN Process
+Framework (OPF) \cite{Firesmith02}. The OPF provides a repository of method
+modules (in OPF called method components) that are defined in terms of a
+meta-model. This meta-model has recently been upgraded to fit the ISO/IEC 24744
+standard \cite{iso24744}. While this standard does support the specification of
+the process part of methods, it provides limited support for the definition of
+processes with a complex control flow. In ISO/IEC 24744 process elements are
+defined as \textit{work units}, which are allocated in \textit{stages}. The
+control flow of the process is established by the stages, which can only be
+associated via precedence relationships. Aharoni \textit{et al.} note this
+problem in \cite{Aharoni08} and suggest enriching processes by means of an
+extension of the stage concept that allows work units to be combined within
+stages in more meaningful ways than simple inclusion (e.g., concurrently or
+iteratively). Another important limitation refers to the lack of formalization
+of process execution semantics, which hinders process enactment via a
+process engine.
+
+Another recent standard initiative is represented by the SPEM 2.0 standard
+\cite{spem}. SPEM 2.0 defines a meta-model for development methods that
+also presents the problems stated above regarding process (control flow)
+specification and process enactment. However, SPEM 2.0 presents an important
+advantage that helps overcome these problems, making it a suitable language
+to be used in our proposal. Specifically, SPEM 2.0 provides powerful mechanisms for
+enhancing process definitions via behavioral modeling formalisms such as BPMN
+2.0 \cite{bpmn}. This allows method engineers to enhance the process
+definition in terms of control flow specification and process
+executability.
+
+To sum up, we consider that the main process support limitations of ME
+approaches are in terms process control flow specification and enactment. To
+fill this gap, this paper extends the work presented by the authors in
+\cite{Cervera10,Cervera11}. Our main intent is to meet ME needs regarding
+support to the process part of methods.
+
+\section{Overview of the MOSKitt4ME Approach}
+\label{SectionOverview}
+
+Figure \ref{FigureOverview} shows an overview of our ME approach. The proposal
+is situated within the context of MDE. Following MDE principles, methods are
+first defined as models (\textit{method design} phase) and these models are then
+used by model transformations to generate the supporting CASE environments
+(\textit{method implementation} phase). During the method design, the method
+engineer defines both the product and process parts of the method. This is
+carried out by assembling method fragments that are available in a method base
+repository \cite{Cervera11}. Once the method design is finished, a CASE
+environment that provides support to both the product and process parts of the
+method is obtained during the method implementation. This is done by means of a
+Model-To-Text (M2T) transformation.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.55]{../images/Overview.png}
+\caption{Overview of MOSKitt4ME}
+\label{FigureOverview}
+\end{figure}
+
+This paper focuses on the process support provided in both phases of our ME
+approach. The main goal of the work is to allow method engineers not only to
+properly specify the process part of methods (during method design) but also to
+bring this specification to execution (during method implementation). In order
+to achieve this goal, our proposal has been defined based on a set of needs that
+must be met. We consider these needs as a first step towards suitable process
+support in ME and CAME technology.
+
+With respect to method design, we need a language to properly specify the
+process part of the method. This language must:
+
+\begin{itemize}
+  \item be expressive enough to enable the representation of
+  complete, understandable, unambiguous, and well-structured processes. 
+  
+  \item fully formalize process execution semantics so that process
+  enactment support can be provided in the CASE environment supporting the
+  method.
+\end{itemize}
+
+With respect to method implementation, we need to enhance CASE environments
+with mechanisms that provide support to:
+
+\begin{itemize}
+  \item the execution of the process specification. Process engines provide a
+  set of enactment facilities (such as task orchestration, task automation,
+  constraint enforcement, etc.) that allow CASE environments to provide
+  guidance to software engineers throughout the actual development process and
+  also to partially automate its performance.
+  
+  \item the management of the method products consumed or produced during
+  the process execution. Process engines must be able to invoke the software
+  tools that enable the creation and manipulation of the method products.
+  Therefore, these tools (editors, generators, etc.) must be integrated in the
+  CASE environment supporting the method.
+\end{itemize}
+
+In order to meet the needs regarding method design, our proposal combines the
+use of SPEM 2.0 and BPMN 2.0 for various reasons. On the one hand, SPEM 2.0
+provides better support than BPMN 2.0 for method modeling. On the other hand,
+BPMN 2.0 provides more expressiveness than SPEM 2.0 with respect to process
+specification. In addition, BPMN 2.0 fully formalizes execution semantics, while
+SPEM 2.0 is not executable. Thereby, the method is defined in our proposal by
+means of SPEM 2.0, and the process part is complemented with a BPMN 2.0 model
+that enhances the process definition in terms of process (control flow)
+specification and process executability. We provide a more detailed comparative
+analysis of SPEM 2.0 and BPMN 2.0 in \cite{Cervera12}.
+
+In order to meet the needs regarding method implementation, we have developed a
+software component that is always integrated in the generated CASE environments.
+This component is built upon a process engine that enables the execution of the
+process definition by orchestrating method tasks and invoking tools for the
+development of the method products. In order for the CASE environments to
+contain the required tools, we make use of reusable assets. These assets are
+stored in a repository and are associated to method elements during the method
+design. Then, the M2T transformation takes these assets and integrates them in
+the generated CASE environment.
+
+\section{Process Specification during Method Design}
+\label{SectionMethodDesign}
+
+Figure \ref{FigureMethodDesign} shows our proposal for method design. It is
+composed of three main steps: \textit{method definition}, \textit{method configuration}, and
+\textit{executable process definition}. These steps are described below,
+focusing on how the process specification is performed. Then, subsection
+\ref{SubsectionExample} illustrates these steps with an example.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{../images/MethodDesign.png}
+\caption{Method design in MOSKitt4ME}
+\label{FigureMethodDesign}
+\end{figure}
+
+\subsubsection{Method Definition.}
+
+In this step, the method engineer builds the method model by means of SPEM
+2.0. As figure \ref{FigureMethodDesign} illustrates, the main elements
+that the method engineer must define to build the method process part
+are \textit{Tasks}, \textit{Activities}, \textit{Work Sequences}, and
+\textit{Roles}. Tasks represent basic units of work. Activities group tasks and
+other activities, forming breakdown structures. The root activity of these
+breakdown structures is named \textit{Delivery Process}. Work
+sequences represent precedence relationships between tasks and activities. Roles
+are performers of method tasks. On the other hand, the method product part is
+composed of \textit{Work Products}, which are inputs and outputs of method
+tasks.
+
+The construction of this model can be performed by assembling reusable method
+fragments retrieved from a method base repository. Further details about how
+these fragments are managed in our ME approach can be found in
+\cite{Cervera10,Cervera11}.
+
+\subsubsection{Method Configuration.}
+
+In this step\footnote{Note that this phase differs from the ME approach of
+method configuration \cite{Karlsson04}.}, the method engineer defines the tools
+that will allow software engineers to perform the method tasks during the
+process enactment, and the guides that will assist them during the tasks
+performance. To do so, the method engineer links tasks (and work products) with
+\textit{reusable assets} that are retrieved from an asset base repository. These
+assets can be \textit{tool assets}, which contain tools (editors, model
+transformations, etc.) that enable the creation of products, and
+\textit{guidance assets}, which contain guidelines (textual descriptions,
+process models, etc.) about the performance of tasks.
+
+The association of reusable assets with tasks and products is performed based on
+the following observations: tasks can be associated with tool assets
+containing model transformations. These transformations will be executed when
+the tasks are invoked during the process enactment. These tasks are
+considered automatic. Manual tasks are not associated with tool assets. Tasks
+can also be associated with guidance assets. The guidelines contained in these
+assets will be used as guidance for the user during the process enactment. On
+the other hand, products must be associated with tool assets defining the
+notation that will be used during the process enactment for the creation of the
+products. These assets can contain meta-models or editors. A meta-model defines
+the abstract syntax of a notation. An editor defines both the abstract and
+concrete syntax.
+
+To summarize, table \ref{tableAssociations} gathers the associations allowed
+between method elements and reusable assets. Further details can be found in
+\cite{Cervera10,Cervera11}.
+
+\begin{table}
+\caption{Associations allowed between method elements and reusable assets}
+\centering
+\begin{tabular}{| c | c |}
+\cline{1-2}
+\multicolumn{1}{|c|}{\textbf{Method Element Type}} &
+\multicolumn{1}{|c|}{\textbf{Reusable Asset Type}}
+\\
+\hline
+Task & Guidance Asset\\
+\cline{2-2}
+& Tool Asset (Model Transformation)\\
+\hline
+Work Product & Tool Asset (Meta-model)\\
+\cline{2-2}
+& Tool Asset (Editor)\\
+\hline
+\end{tabular}
+\label{tableAssociations}
+\end{table}
+
+\subsubsection{Executable Process Definition.}
+
+In this step, the method engineer defines an executable representation of the
+method process part. We have automated this step by means of a Model-to-Model
+(M2M) transformation that takes the configured SPEM 2.0 model as input and
+automatically generates a set of BPMN 2.0 processes. Then, these processes can
+be manually modified to complete the process specification\footnote{Ideally, the
+M2M transformation will be implemented as a bidirectional transformation. Thus,
+changes in the BPMN 2.0 model affecting the SPEM 2.0 model will be automatically
+transmitted (and vice versa).}. This is often needed because BPMN 2.0 provides
+more expresiveness than SPEM 2.0 with respect to process elicitation.
+
+In order to provide more insights on how the transformation obtains the
+BPMN 2.0 processes, we summarize in table \ref{tableMappings} the mappings
+between the SPEM 2.0 and BPMN 2.0 concepts. In particular, table
+\ref{tableMappings} contains mappings for all SPEM 2.0 concepts that belong to
+the process part of a method (see figure \ref{FigureMethodDesign}). Logical
+elements such as decision nodes are not included since they cannot be
+represented in SPEM 2.0. The rationale of the mappings is provided below.
+
+\begin{table}
+\caption{Mappings between SPEM 2.0 and BPMN 2.0}
+\centering
+\begin{tabular}{| p{0.5cm} | p{5.5cm} | p{5.5cm} |}
+\cline{2-3}
+\multicolumn{1}{c|}{} & \multicolumn{1}{|c|}{\textbf{SPEM 2.0}} &
+\multicolumn{1}{|c|}{\textbf{BPMN 2.0}}
+\\
+\hline
+1 & DeliveryProcess (root Activity) & Process\\
+\hline
+2 & Activity (nested) & Process and CallActivity\\
+\hline
+3 & Task (with ReusableAsset) & ServiceTask\\
+\hline
+4 & Task (with ReusableAsset associated to output WorkProduct) &
+UserTask\\
+\hline
+5 & Task (without ReusableAsset) & ManualTask\\
+\hline
+6 & WorkSequence & SequenceFlow\\
+\hline
+7 & Role & Lane \\
+\hline
+\end{tabular}
+\label{tableMappings}
+\end{table}
+
+\begin{enumerate}
+  \item A SPEM 2.0 \textit{DeliveryProcess} is mapped into a BPMN 2.0
+  \textit{Process}.
+  
+  \item A SPEM 2.0 \textit{Activity} is mapped into a BPMN 2.0
+  \textit{CallActivity} and a BPMN 2.0 \textit{Process}. The
+  \textit{CallActivity} invokes the \textit{Process} when it is executed.
+  
+  \item A SPEM 2.0 \textit{Task} is mapped into a BPMN 2.0
+  \textit{ServiceTask} if and only if a reusable asset containing a model
+  transformation is associated to the \textit{Task}.
+  
+  \item A SPEM 2.0 \textit{Task} is mapped into a BPMN 2.0 \textit{UserTask}
+  if and only if the \textit{Task} is not automatic (no reusable asset
+  containing a model transformation is associated to it) and a reusable asset is
+  associated to an output \textit{WorkProduct} of the \textit{Task}.
+  
+  \item A SPEM 2.0 \textit{Task} is mapped into a BPMN 2.0
+  \textit{ManualTask} if and only if no reusable asset is associated to the
+  \textit{Task} and its output \textit{WorkProducts}.
+  
+  \item A SPEM 2.0 \textit{WorkSequence} is mapped into a BPMN 2.0
+  \textit{SequenceFlow}. The source of the \textit{SequenceFlow} is set to the
+  BPMN 2.0 element generated from the \textit{predecessor} of the
+  \textit{WorkSequence}. The target is set to the BPMN 2.0 element generated
+  from the \textit{successor} of the \textit{WorkSequence}.
+  
+  \item A SPEM 2.0 \textit{Role} is mapped into a BPMN 2.0 \textit{Lane} if
+  and only if the \textit{Lane} has not been previously generated.
+\end{enumerate}
+
+\subsection{An Example of Process Specification in MOSKitt4ME}
+\label{SubsectionExample}  
+
+In order to illustrate our proposal for process specification, we present a
+practical example carried out in MOSKitt4ME. The example process has been
+modeled in real settings at the CIT. Specifically, it corresponds to an excerpt
+of gvMetrica that deals with the design of information systems.
+
+\subsubsection{Method Definition.}
+
+This step is performed via the EPF Composer \cite{epf}, an
+Eclipse-based editor that has been integrated in MOSKitt4ME to enable the
+creation of SPEM 2.0 models. Figure \ref{SPEMprocess} shows the
+example process after being defined by means of this editor. As the figure
+shows, the first steps of the process are to define the system architecture, the
+user interface, and the business logic. Then, a model defining the system
+database schema is obtained from the models specifying the business logic. The
+database model is then used to automatically obtain the database code. Once all
+the system artifacts have been created, the test cases can be defined. Finally,
+the design validation is carried out to validate all the work performed during
+the process.
+
+As depicted in figure \ref{SPEMprocess}, the process is represented in SPEM 2.0
+as a breakdown structure that is mainly composed of \textit{Activities} (e.g.,
+\textit{Data Persistence Design}) and \textit{Tasks} (e.g.,
+\textit{Database Model Generation}), which reference performing \textit{Roles}
+(e.g., \textit{Analyst}) as well as input and output \textit{Work Products}
+(e.g., \textit{UML Class Model}). Moreover, there are \textit{Work Sequences}
+that are established between method elements (e.g., \textit{System Architecture
+Definition} is a predecessor of \textit{User Interface Design}).
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.65]{../images/SPEMprocess.PNG}
+\caption{Example process in SPEM 2.0}
+\label{SPEMprocess}
+\end{figure}
+
+\subsubsection{Method Configuration.}
+
+This step is performed via a repository client that allows method
+engineers to retrieve reusable assets from the asset base \cite{Cervera11}. As
+an example, let us consider the task \textit{Database Model Generation}. The
+execution of this task obtains a database model from a UML class model. To
+specify this behavior, the method engineer can associate the task with an asset
+containing the Eclipse plug-ins that implement the UML2DB transformation
+provided by the MOSKitt tool. On the other hand, the work products of the task
+can be associated with assets containing the UML meta-model and the MOSKitt
+SQLSchema meta-model respectively.
+
+\subsubsection{Executable Process Definition.}
+
+This step is performed via the M2M transformation described above, which has
+been implemented in MOSKitt4ME as an extension of the EPF Composer. Figure
+\ref{BPMNprocess} shows the BPMN 2.0 processes resulting from applying this
+transformation to the example process. These processes are represented in terms
+of the Activiti Designer \cite{activiti}, an Eclipse-based graphical editor that
+has been integrated in MOSKitt4ME to support BPMN 2.0.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.23]{../images/BPMNprocess.PNG}
+\caption{Generated BPMN 2.0 processes}
+\label{BPMNprocess}
+\end{figure}
+
+To illustrate how the processes shown in figure \ref{BPMNprocess} have
+been generated, we present below some examples of the application of the
+mappings of table \ref{tableMappings}.
+
+\begin{enumerate}
+  \item The SPEM 2.0 \textit{Delivery Process} ``\textit{Information System
+  Design}'' is mapped into a BPMN 2.0 \textit{Process} (diagram
+  ``\textit{A}'' in figure \ref{BPMNprocess}).
+  
+  \item The SPEM 2.0 \textit{Activity} ``\textit{Data Persistence Design}'' is
+  mapped into a \textit{Call Activity} and a BPMN 2.0 \textit{Process}
+  (diagram ``\textit{B}'' in figure \ref{BPMNprocess}).
+  
+  \item The SPEM 2.0 \textit{Task} ``\textit{Database Model Generation}'' is
+  mapped into a \textit{Service Task} since it has a M2M transformation
+  associated to it as a reusable asset.
+  
+  \item The SPEM 2.0 \textit{Task} ``\textit{Database Model Revision}'' is mapped
+  into a \textit{User Task} since it is not automatic but has an output product with a
+  reusable asset associated to it (not shown in the example).
+  
+  \item The SPEM 2.0 \textit{Task} ``\textit{Design Validation}'' is mapped into
+  a \textit{Manual Task} since it does not have any reusable asset associated to
+  it.
+  
+  \item The SPEM 2.0 \textit{Work Sequences} are mapped into the
+  \textit{Sequence Flows} that connect the BPMN 2.0 elements in both diagrams.
+\end{enumerate}
+
+After the generation of the BPMN 2.0 processes, the method engineer can
+manually modify them to specify more complex control flows. For instance, the
+method engineer can add a \textit{Gateway} to specify that the \textit{Call
+Activity} ``\textit{Tests Design}'' must not be executable until all its
+predecessors are finished.
+
+\section{Process Enactment during Method Implementation}
+\label{SectionMethodImplementation}
+
+The method implementation phase is in charge of the construction of the CASE
+tool support for the method defined during the method design. In MOSKitt4ME,
+CASE environments are semi-automatically built by means of a M2T transformation.
+This transformation takes a method specification as input and obtains a software
+environment that integrates the tools contained in the reusable assets (as well
+as a set of static components). We detail this transformation in \cite{Cervera10b}.
+
+In this section we focus on how CASE environments are structured to support
+the process enactment. As figure \ref{FigureMethodImplementation} shows, CASE
+environments are divided into three parts: components providing
+\textit{method product support}, components providing \textit{method process
+support}, and the \textit{Project Manager Component} (PMC). These parts are
+introduced below. Subsection \ref{SubsectionExample2} illustrates them with an
+example.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.55]{../images/MethodImplementation.PNG}
+\caption{Method implementation in MOSKitt4ME}
+\label{FigureMethodImplementation}
+\end{figure}
+
+\subsubsection{Method Product Support.}
+
+The software components that provide product support must enable the
+creation of the method products. These components
+correspond to the reusable assets associated to the method elements during the
+method configuration. Specifically, \textit{Tool assets} allow software
+engineers to create the method products by means of model transformations or
+software applications such as graphical or textual editors. \textit{Guidance
+assets} do not allow software engineers to create the method
+products, but they do provide guidance on how the method tasks must be
+performed to properly develop these products.
+
+\subsubsection{Method Process Support.}
+
+The software components that provide process support must enable the execution
+of the BPMN 2.0 model. This functionality is provided by the Activiti Engine
+\cite{activiti}. The behavior of the engine according to the different task
+types is the following:
+
+\begin{itemize}
+  \item \emph{Service tasks}: when a service task becomes active, it is
+  automatically executed. The execution of a service task invokes the model
+  transformation that is associated to the task as a reusable asset.
+  \item \emph{User tasks}: when a user task becomes active, the engine invokes
+  the software tools that enable the creation of the output products of the
+  task. These tools are associated to the products as reusable assets.
+  \item \emph{Manual tasks}: when a manual task becomes active, the engine does
+  not perform any action.
+  \item \emph{Call activities}: when a call activity becomes active, the engine
+  automatically starts a new instance of the BPMN 2.0 process referenced by the
+  call activity.
+\end{itemize}
+
+\subsubsection{Project Manager Component.}
+
+The PMC provides a graphical user interface for the
+CASE environment and assists software engineers during the process enactment. To
+achieve this goal, it makes use of the Activiti engine to execute BPMN 2.0
+process instances and also makes use of the SPEM 2.0 model to extract
+information about the method that is not represented in the BPMN 2.0 model. The
+PMC is divided into the following Eclipse views:
+
+\begin{itemize}
+  \item \textit{Project Explorer}: This view is provided as
+  part of the Eclipse platform and has been integrated in the PMC to show the
+  projects that have been created and the resources they contain (files,
+  folders, etc.). From this view, the software engineer can create new projects,
+  delete existing projects, etc.
+  
+  \item \textit{Process}: This view shows the current state of the
+  process instance associated to the project that is selected in the Project
+  Explorer view. From this view, the software engineer can invoke the execution
+  of the tasks that are executable. Once a task is finished, the PMC invokes the
+  engine API to set the task as executed and proceed to the next state of the
+  process. The Process view also enables task filtering based on the role of the
+  users.
+  
+  \item \textit{Product Explorer}: This view shows a hierarchical picture of the
+  artifacts that have been produced during the course of the project that is
+  selected in the Project Explorer view. This hierarchy is based on domains,
+  subdomains, and work product elements, which are read from the SPEM 2.0 model.
+  The Product Explorer view also enables product filtering based on the user
+  role.
+  
+  \item \textit{Help}: This view is provided as part of Eclipse and has been
+  integrated in the PMC to provide guidance to software engineers during
+  the performance of the method tasks. This view is dynamically updated based on
+  the task that is selected in the Process view. The guides to show are known by
+  the PMC because they were associated to the selected task as a reusable asset.
+\end{itemize}
+
+\subsection{An Example of Process Enactment in MOSKitt4ME}
+\label{SubsectionExample2}
+
+In order to illustrate how processes are enacted in MOSKitt4ME, we continue with
+the example introduced in subsection \ref{SubsectionExample}. Let us consider
+that a new project has been created by means of the Project Explorer view. When
+this project is selected, the Process and Product Explorer views are updated
+accordingly. At this point, the Process view shows the initial state of the
+process and the Product Explorer view is empty. Now, let us consider that the
+first three activities have been executed, and the next executable task is
+\textit{Database Model Generation}. Since this task is automatic, the PMC
+automatically invokes the associated transformation. Once the transformation is
+finished, the task is set as executed and the process proceeds to the next
+state. This state is illustrated in figure \ref{ProcessProductView}.
+
+\begin{figure}
+\centering
+\includegraphics[scale=0.67]{../images/ProcessAndProductExplorerViews.PNG}
+\caption{Process and Product Explorer views}
+\label{ProcessProductView}
+\end{figure}
+
+The Process view (left)\footnote{Additional screenshots of the tool
+can be found in our previous work \cite{Cervera10,Cervera11,Cervera10b} and also
+in https://users.dsic.upv.es/$\sim$vtorres/moskitt4me/} shows the
+tasks and activities in different colors depending on whether they have already
+been executed (blue), are executable (green), or are not executable (red). Note
+that, even though the Process view shows the process in terms of SPEM 2.0, the
+process instance corresponds to an instance of a BPMN 2.0 process. This is
+possible because there is a one-to-one correspondence between SPEM 2.0 tasks and
+BPMN 2.0 tasks.
+
+The Product Explorer view (right) depicts some artifacts that have been
+produced during the process enactment. In this case, it is showing the input and
+output products of the last executed task (i.e., \textit{Database Model
+Generation}).
+
+Now, let us consider that the user wants to proceed with the process execution.
+To do this, the user selects the task \textit{Database Model Revision} in
+the Process view. This action has a twofold effect. The Help
+view is updated to show textual guidance about the task and, since the task is a
+user task, the PMC opens the software tool that allows the software
+engineer to carry out the task.
+
+Once all the tasks have been executed, the process engine deletes the process
+instance and, therefore, the project can be considered as concluded.
+
+\section{Conclusions}
+\label{SectionConclusions}
+
+In this paper we present an extension of our ME approach and CAME environment
+(MOSKitt4ME) \cite{Cervera10,Cervera11} so as to provide adequate support to
+process specification during method design and process enactment during method
+implementation. This extension builds on the idea of combining the use of SPEM
+2.0 and BPMN 2.0. This is based on the fact that BPMN 2.0 can resolve SPEM 2.0
+limitations with respect to process elicitation and process executability.
+
+MOSKitt4ME is currently being used in real settings at the CIT. Since
+practitioners at the CIT are familiar with the techniques, languages, and tools
+used in our work (i.e., MDE, SPEM 2.0, BPMN 2.0, Eclipse, etc.), MOSKitt4ME
+has had a low learning curve. This brings important benefits, such as shorter
+periods of training, and lower overhead. The use of the tool in a real context
+is also providing us initial feedback that allows us to identify limitations of
+our work. For instance, MOSKitt4ME does not yet properly deal with the dynamic
+nature of projects. Therefore, as future work we aim to provide support for
+variability and evolution of methods (and CASE tools) at runtime.
+
+\bibliographystyle{splncs03}
+\bibliography{../references/er2012}
+
+\end{document}
